@@ -13,13 +13,13 @@ type EnemySnake struct {
 	game             *Game
 	numParts         int
 	lastDir          string
-	seperntHeadUp    ebiten.Image
-	serpentHeadDown  ebiten.Image
-	serpentHeadLeft  ebiten.Image
-	serpentHeadRight ebiten.Image
-	bodyH            ebiten.Image
-	bodyV            ebiten.Image
-	bodyParts        [][]float64
+	sHeadU           ebiten.Image
+	sHeadD           ebiten.Image
+	sHeadL           ebiten.Image
+	sHeadR           ebiten.Image
+	horizontal       ebiten.Image
+	vertical         ebiten.Image
+	partsOfBody      [][]float64
 	seed             rand.Source
 	pointsWaiting    int
 	score            int
@@ -41,20 +41,20 @@ func CreateEnemySnake(g *Game) *EnemySnake {
 	e.seed = rand.NewSource(time.Now().UnixNano())
 	random := rand.New(e.seed)
 
-	e.bodyParts = append(e.bodyParts, []float64{float64(random.Intn(30) * 20), float64(random.Intn(30) * 20)})
+	e.partsOfBody = append(e.partsOfBody, []float64{float64(random.Intn(30) * 20), float64(random.Intn(30) * 20)})
 
-	seperntHeadUp, _, _ := ebitenutil.NewImageFromFile("images/headSerpentDownEnemy.png", ebiten.FilterDefault)
-	serpentHeadDown, _, _ := ebitenutil.NewImageFromFile("images/headSerpentUpEnemy.png", ebiten.FilterDefault)
-	serpentHeadLeft, _, _ := ebitenutil.NewImageFromFile("images/headSerpentLeftEnemy.png", ebiten.FilterDefault)
-	serpentHeadRight, _, _ := ebitenutil.NewImageFromFile("images/headSerpentRightEnemy.png", ebiten.FilterDefault)
-	bodyH, _, _ := ebitenutil.NewImageFromFile("images/bodySerpentHEnemy.png", ebiten.FilterDefault)
-	bodyV, _, _ := ebitenutil.NewImageFromFile("images/bodySerpentVEnemy.png", ebiten.FilterDefault)
-	e.seperntHeadUp = *seperntHeadUp
-	e.serpentHeadDown = *serpentHeadDown
-	e.serpentHeadLeft = *serpentHeadLeft
-	e.serpentHeadRight = *serpentHeadRight
-	e.bodyH = *bodyH
-	e.bodyV = *bodyV
+	sHeadU, _, _ := ebitenutil.NewImageFromFile("images/headDEne.png", ebiten.FilterDefault)
+	sHeadD, _, _ := ebitenutil.NewImageFromFile("images/headUEne.png", ebiten.FilterDefault)
+	sHeadL, _, _ := ebitenutil.NewImageFromFile("images/headLEne.png", ebiten.FilterDefault)
+	sHeadR, _, _ := ebitenutil.NewImageFromFile("images/headREne.png", ebiten.FilterDefault)
+	horizontal, _, _ := ebitenutil.NewImageFromFile("images/bodyHEne.png", ebiten.FilterDefault)
+	vertical, _, _ := ebitenutil.NewImageFromFile("images/bodyVEne.png", ebiten.FilterDefault)
+	e.sHeadU = *sHeadU
+	e.sHeadD = *sHeadD
+	e.sHeadL = *sHeadL
+	e.sHeadR = *sHeadR
+	e.horizontal = *horizontal
+	e.vertical = *vertical
 
 	return &e
 }
@@ -145,13 +145,13 @@ func (s *EnemySnake) Draw(screen *ebiten.Image, dotTime int) error {
 	enemyDO.GeoM.Translate(xPos, yPos)
 
 	if s.lastDir == "up" {
-		screen.DrawImage(&s.seperntHeadUp, enemyDO)
+		screen.DrawImage(&s.sHeadU, enemyDO)
 	} else if s.lastDir == "down" {
-		screen.DrawImage(&s.serpentHeadDown, enemyDO)
+		screen.DrawImage(&s.sHeadD, enemyDO)
 	} else if s.lastDir == "right" {
-		screen.DrawImage(&s.serpentHeadRight, enemyDO)
+		screen.DrawImage(&s.sHeadR, enemyDO)
 	} else if s.lastDir == "left" {
-		screen.DrawImage(&s.serpentHeadLeft, enemyDO)
+		screen.DrawImage(&s.sHeadL, enemyDO)
 	}
 
 	for i := 0; i < s.numParts; i++ {
@@ -159,9 +159,9 @@ func (s *EnemySnake) Draw(screen *ebiten.Image, dotTime int) error {
 		xPos, yPos := s.GetSerpentBody(i)
 		partDO.GeoM.Translate(xPos, yPos)
 		if s.lastDir == "up" || s.lastDir == "down" {
-			screen.DrawImage(&s.bodyH, partDO)
+			screen.DrawImage(&s.horizontal, partDO)
 		} else {
-			screen.DrawImage(&s.bodyV, partDO)
+			screen.DrawImage(&s.vertical, partDO)
 		}
 	}
 
@@ -191,8 +191,8 @@ func (s *EnemySnake) UpdatePos(dotTime int) {
 
 // Evaluating if there was a collision
 func (s *EnemySnake) CollisionWithPlayer(xPos, yPos float64) bool {
-	for i := 0; i < len(s.bodyParts); i++ {
-		if xPos == s.bodyParts[i][0] && yPos == s.bodyParts[i][1] {
+	for i := 0; i < len(s.partsOfBody); i++ {
+		if xPos == s.partsOfBody[i][0] && yPos == s.partsOfBody[i][1] {
 			return true
 		}
 	}
@@ -201,12 +201,12 @@ func (s *EnemySnake) CollisionWithPlayer(xPos, yPos float64) bool {
 
 // Head pos is retuned
 func (s *EnemySnake) GetSerpentHead() (float64, float64) {
-	return s.bodyParts[0][0], s.bodyParts[0][1]
+	return s.partsOfBody[0][0], s.partsOfBody[0][1]
 }
 
 // Last body pos is returned
 func (s *EnemySnake) GetSerpentBody(pos int) (float64, float64) {
-	return s.bodyParts[pos+1][0], s.bodyParts[pos+1][1]
+	return s.partsOfBody[pos+1][0], s.partsOfBody[pos+1][1]
 }
 
 // AddPoint controls game's score
@@ -217,13 +217,13 @@ func (s *EnemySnake) AddPoint() {
 
 // Game score control
 func (s *EnemySnake) AddParts(newX, newY float64) {
-	s.bodyParts = append([][]float64{{newX, newY}}, s.bodyParts...)
-	s.bodyParts = s.bodyParts[:s.numParts+1]
+	s.partsOfBody = append([][]float64{{newX, newY}}, s.partsOfBody...)
+	s.partsOfBody = s.partsOfBody[:s.numParts+1]
 }
 
 // Changes pos
 func (s *EnemySnake) TranslateHeadPos(newXPos, newYPos float64) {
-	newX := s.bodyParts[0][0] + newXPos
-	newY := s.bodyParts[0][1] + newYPos
+	newX := s.partsOfBody[0][0] + newXPos
+	newY := s.partsOfBody[0][1] + newYPos
 	s.AddParts(newX, newY)
 }
