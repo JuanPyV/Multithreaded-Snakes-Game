@@ -77,14 +77,14 @@ func (s *EnemySnake) Direction(dotTime int) error {
 		if changingDirection == 0 {
 			switch action {
 			case 0:
-				if posX < 1040 && s.lastDir != "left" {
+				if posX < 560 && s.lastDir != "left" {
 					s.lastDir = "right"
 				} else {
 					s.lastDir = "left"
 				}
 				return nil
 			case 1:
-				if posY < 680 && s.lastDir != "up" {
+				if posY < 660 && s.lastDir != "up" {
 					s.lastDir = "down"
 				} else {
 					s.lastDir = "up"
@@ -107,7 +107,7 @@ func (s *EnemySnake) Direction(dotTime int) error {
 			}
 		}
 		// Bounds the collision
-		if posX >= 1040 {
+		if posX >= 560 {
 			s.lastDir = "left"
 			return nil
 		}
@@ -115,7 +115,7 @@ func (s *EnemySnake) Direction(dotTime int) error {
 			s.lastDir = "right"
 			return nil
 		}
-		if posY == 680 {
+		if posY == 660 {
 			s.lastDir = "up"
 			return nil
 		}
