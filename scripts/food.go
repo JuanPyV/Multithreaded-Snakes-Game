@@ -10,46 +10,42 @@ import (
 
 // Food is what is eaten
 type Food struct {
-	xLimit int
-	yLimit int
-	xPos   float64
-	yPos   float64
-	eaten  bool
-	game   *Game
-	taco   ebiten.Image
+	x       float64
+	y       float64
+	eaten   bool
+	game    *Game
+	foodImg ebiten.Image
 }
 
-// Here we generate the food
-func GenFood(g *Game) *Food {
-	c := Food{
-		game:   g,
-		xLimit: 30,
-		yLimit: 30,
+// Here we generate the foods
+func GenFood(game *Game) *Food {
+	food := Food{
+		game:   game,
 		eaten:  false,
 	}
-	taco, _, _ := ebitenutil.NewImageFromFile("images/taco.png", ebiten.FilterDefault)
-	c.taco = *taco
+	foodImg, _, _ := ebitenutil.NewImageFromFile("images/cherry.png", ebiten.FilterDefault)
+	food.foodImg = *foodImg
 
 	seed := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(seed)
 
-	c.xPos = float64(random.Intn(c.xLimit) * 20)
-	c.yPos = float64(random.Intn(c.yLimit) * 20)
-	return &c
+	food.x = float64(random.Intn(28) * 20 + 20)
+	food.y = float64(random.Intn(30) * 20 + 60)
+	return &food
 }
 
-// Update to the delicious taco deletion
-func (c *Food) Update(dotTime int) error {
-	if c.eaten == false {
+// Update to the delicious foodImg deletion
+func (food *Food) Update(dotTime int) error {
+	if !food.eaten {
 		return nil
 	}
 	return nil
 }
 
-// Draw the taco
-func (c *Food) Draw(screen *ebiten.Image, dotTime int) error {
+// Draw the foodImg
+func (food *Food) Draw(screen *ebiten.Image, dotTime int) error {
 	drawer := &ebiten.DrawImageOptions{}
-	drawer.GeoM.Translate(c.xPos, c.yPos)
-	screen.DrawImage(&c.taco, drawer)
+	drawer.GeoM.Translate(food.x, food.y)
+	screen.DrawImage(&food.foodImg, drawer)
 	return nil
 }

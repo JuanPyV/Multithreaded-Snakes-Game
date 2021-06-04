@@ -29,8 +29,9 @@ func init() {
 		fmt.Printf("'%s' is a invalid argument for number of enemies, try with a number. \n", os.Args[2])
 		os.Exit(1)
 	}
-	fmt.Printf("Food: %d \n", nFood)
-	fmt.Printf("Enemies: %d \n", nEnemies)
+	//fmt.Printf("Food: %d \n", nFood)
+	//fmt.Printf("Enemies: %d \n", nEnemies)
+
 	game = scripts.NewGame(nFood, nEnemies)
 
 }

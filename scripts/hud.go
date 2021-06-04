@@ -31,7 +31,7 @@ func (hud *Hud) addPoint() {
 
 // Draw the hud
 func (hud *Hud) Draw(screen *ebiten.Image) error {
-	text.Draw(screen, "Score: "+strconv.Itoa(10), inconsolata.Bold8x16, 20, 30, color.Black)
+	text.Draw(screen, "Score: "+strconv.Itoa(hud.score), inconsolata.Bold8x16, 20, 30, color.Black)
 	if hud.game.alive == false {
 		textGameOver := ""
 		if hud.game.crashed {
