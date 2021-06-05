@@ -2,8 +2,9 @@ package scripts
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"time"
+
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 
 	"github.com/hajimehoshi/ebiten"
 )
@@ -13,6 +14,8 @@ type Game struct {
 	snake        *Snake
 	hud          *Hud
 	foods        []*Food
+	enemies      []*EnemySnake
+	enemiesChan  []chan int
 	snakeChannel chan int
 	alive        bool
 	crashed      bool
@@ -21,7 +24,6 @@ type Game struct {
 	score        int
 	dotTime      int
 }
-
 
 // NewGame : Starts a new game assigning variables
 func NewGame(nFood int, nEnemies int) Game {
@@ -49,6 +51,22 @@ func NewGame(nFood int, nEnemies int) Game {
 
 		}
 	}()
+
+	arrayEnemies := make([]*EnemySnake, game.numEnemies)
+	for i := 0; i < len(arrayEnemies); i++ {
+		arrayEnemies[i] = CreateEnemySnake(&game)
+		time.Sleep(20)
+	}
+	enemiesChan := make([]chan int, game.numEnemies)
+	for i := 0; i < len(enemiesChan); i++ {
+		enemiesChan[i] = make(chan int)
+		arrayEnemies[i].channelMovements = enemiesChan[i]
+		go arrayEnemies[i].ChannelPipe()
+		time.Sleep(20)
+	}
+	game.enemiesChan = enemiesChan
+	game.enemies = arrayEnemies
+
 	game.hud = initHud(&game)
 	fmt.Printf("Food: %d \n", nFood)
 	fmt.Printf("Enemies: %d \n", nEnemies)
@@ -77,6 +95,9 @@ func (g *Game) Update() error {
 		if err := g.snake.Update(g.dotTime); err != nil {
 			g.snakeChannel <- g.dotTime
 		}
+		for i := 0; i < len(g.enemiesChan); i++ {
+			g.enemiesChan[i] <- g.dotTime
+		}
 		xPos, yPos := g.snake.getHeadPos()
 		for i := 0; i < len(g.foods); i++ {
 			if xPos == g.foods[i].x && yPos == g.foods[i].y { //if snake eats a cherry grows
@@ -88,15 +109,25 @@ func (g *Game) Update() error {
 				break
 			}
 		}
+		for j := 0; j < len(g.enemies); j++ {
+			xPos, yPos := g.enemies[j].GetHeadPos()
+			for i := 0; i < len(g.foods); i++ {
+				if xPos == g.foods[i].x && yPos == g.foods[i].y { //if snake eats a cherry grows
+					g.foods[i].y = -20
+					g.foods[i].x = -20
+					g.hud.addPoint()
+					g.numFood--
+					g.enemies[j].AddPoint()
+					break
+				}
+			}
+		}
 	}
-
 	for i := 0; i < g.numFood; i++ {
 		if err := g.foods[i].Update(g.dotTime); err != nil {
 			return err
 		}
 	}
-
-
 
 	return nil
 }
@@ -111,6 +142,12 @@ func (g *Game) Draw(screen *ebiten.Image) error {
 
 	if err := g.snake.Draw(screen, g.dotTime); err != nil {
 		return err
+	}
+
+	for _, enemy := range g.enemies {
+		if err := enemy.Draw(screen, g.dotTime); err != nil {
+			return err
+		}
 	}
 
 	if err := g.hud.Draw(screen); err != nil {

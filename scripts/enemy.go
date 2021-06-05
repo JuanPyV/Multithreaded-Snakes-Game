@@ -17,8 +17,7 @@ type EnemySnake struct {
 	sHeadD           ebiten.Image
 	sHeadL           ebiten.Image
 	sHeadR           ebiten.Image
-	horizontal       ebiten.Image
-	vertical         ebiten.Image
+	bodyE            ebiten.Image
 	partsOfBody      [][]float64
 	seed             rand.Source
 	pointsWaiting    int
@@ -47,14 +46,12 @@ func CreateEnemySnake(g *Game) *EnemySnake {
 	sHeadD, _, _ := ebitenutil.NewImageFromFile("images/headDEne.png", ebiten.FilterDefault)
 	sHeadL, _, _ := ebitenutil.NewImageFromFile("images/headLEne.png", ebiten.FilterDefault)
 	sHeadR, _, _ := ebitenutil.NewImageFromFile("images/headREne.png", ebiten.FilterDefault)
-	horizontal, _, _ := ebitenutil.NewImageFromFile("images/bodyHEne.png", ebiten.FilterDefault)
-	vertical, _, _ := ebitenutil.NewImageFromFile("images/bodyVEne.png", ebiten.FilterDefault)
+	bodyE, _, _ := ebitenutil.NewImageFromFile("images/bodyEne.png", ebiten.FilterDefault)
 	e.sHeadU = *sHeadU
 	e.sHeadD = *sHeadD
 	e.sHeadL = *sHeadL
 	e.sHeadR = *sHeadR
-	e.horizontal = *horizontal
-	e.vertical = *vertical
+	e.bodyE = *bodyE
 
 	return &e
 }
@@ -158,11 +155,7 @@ func (s *EnemySnake) Draw(screen *ebiten.Image, dotTime int) error {
 		partDO := &ebiten.DrawImageOptions{}
 		xPos, yPos := s.GetBody(i)
 		partDO.GeoM.Translate(xPos, yPos)
-		if s.lastDir == "up" || s.lastDir == "down" {
-			screen.DrawImage(&s.horizontal, partDO)
-		} else {
-			screen.DrawImage(&s.vertical, partDO)
-		}
+		screen.DrawImage(&s.bodyE, partDO)
 	}
 
 	return nil
