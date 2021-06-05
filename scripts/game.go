@@ -117,7 +117,7 @@ func (g *Game) Update() error {
 					g.foods[i].x = -20
 					g.hud.addPoint()
 					g.numFood--
-					g.snake.addPoint()
+					g.enemies[j].AddPoint()
 					break
 				}
 			}
