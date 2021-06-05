@@ -1,4 +1,4 @@
-module scripts
+module github.com/juanpyv/multithreaded-snakes-game/main
 
 go 1.16
 
