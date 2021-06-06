@@ -38,7 +38,7 @@ func NewGame(nFood int, nEnemies int) Game {
 
 	foodArray := make([]*Food, game.numFood) //store all the cherries
 	for i := 0; i < game.numFood; i++ {
-		foodArray[i] = GenFood(&game)
+		foodArray[i] = GenFood()
 		time.Sleep(20)
 	}
 	game.foods = foodArray
@@ -70,61 +70,73 @@ func NewGame(nFood int, nEnemies int) Game {
 	game.hud = initHud(&game)
 	fmt.Printf("Food: %d \n", nFood)
 	fmt.Printf("Enemies: %d \n", nEnemies)
-	fmt.Println(foodArray)
+	//fmt.Println(foodArray)
 	return game
 }
 
 // gameOver ends the game
-func (g *Game) gameOver() {
-	g.alive = false //boolean to keep alive
+func (game *Game) gameOver() {
+	game.alive = false //boolean to keep alive
 }
 
-func (g *Game) Crashed() {
-	g.crashed = true
+func (game *Game) Crashed() {
+	game.crashed = true
 }
 
 // Update the main process of the game
-func (g *Game) Update() error {
-	if g.alive {
-		if g.numFood == 0 { //when all cherries has been eating the game ends
-			g.alive = false
+func (game *Game) Update() error {
+	if game.alive {
+		if game.numFood == 0 { //when all cherries has been eating the game ends
+			game.hud.game.alive = false
+			largest := game.enemies[0]
+			for i := 1; i < len(game.enemies); i++ {
+				if game.enemies[i].score > largest.score {
+					largest = game.enemies[i]
+				}
+			}
+
+			if game.snake.score > largest.score {
+				game.hud.bigger = true
+			} else {
+				game.hud.bigger = false
+			}
+
 		}
 		//update the channels
-		g.dotTime = (g.dotTime + 1) % 10
+		game.dotTime = (game.dotTime + 1) % 10
 
-		if err := g.snake.Update(g.dotTime); err != nil {
-			g.snakeChannel <- g.dotTime
+		if err := game.snake.Update(game.dotTime); err != nil {
+			game.snakeChannel <- game.dotTime
 		}
-		for i := 0; i < len(g.enemiesChan); i++ {
-			g.enemiesChan[i] <- g.dotTime
+		for i := 0; i < len(game.enemiesChan); i++ {
+			game.enemiesChan[i] <- game.dotTime
 		}
-		xPos, yPos := g.snake.getHeadPos()
-		for i := 0; i < len(g.foods); i++ {
-			if xPos == g.foods[i].x && yPos == g.foods[i].y { //if snake eats a cherry grows
-				g.foods[i].y = -20
-				g.foods[i].x = -20
-				g.hud.addPoint()
-				g.numFood--
-				g.snake.addPoint()
+		xPos, yPos := game.snake.getHeadPos()
+		for i := 0; i < len(game.foods); i++ {
+			if xPos == game.foods[i].x && yPos == game.foods[i].y { //if snake eats a cherry grows
+				game.foods[i].y = -20
+				game.foods[i].x = -20
+				game.hud.addPoint()
+				game.numFood--
+				game.snake.addPoint()
 				break
 			}
 		}
-		for j := 0; j < len(g.enemies); j++ {
-			xPos, yPos := g.enemies[j].GetHeadPos()
-			for i := 0; i < len(g.foods); i++ {
-				if xPos == g.foods[i].x && yPos == g.foods[i].y { //if snake eats a cherry grows
-					g.foods[i].y = -20
-					g.foods[i].x = -20
-					g.hud.addPoint()
-					g.numFood--
-					g.enemies[j].AddPoint()
+		for j := 0; j < len(game.enemies); j++ {
+			xPos, yPos := game.enemies[j].GetHeadPos()
+			for i := 0; i < len(game.foods); i++ {
+				if xPos == game.foods[i].x && yPos == game.foods[i].y { //if snake eats a cherry grows
+					game.foods[i].y = -20
+					game.foods[i].x = -20
+					game.numFood--
+					game.enemies[j].AddPoint()
 					break
 				}
 			}
 		}
 	}
-	for i := 0; i < g.numFood; i++ {
-		if err := g.foods[i].Update(g.dotTime); err != nil {
+	for i := 0; i < game.numFood; i++ {
+		if err := game.foods[i].Update(game.dotTime); err != nil {
 			return err
 		}
 	}
@@ -133,29 +145,29 @@ func (g *Game) Update() error {
 }
 
 // Draw the whole interface
-func (g *Game) Draw(screen *ebiten.Image) error {
+func (game *Game) Draw(screen *ebiten.Image) error {
 
 	drawer := &ebiten.DrawImageOptions{}
 	drawer.GeoM.Translate(0, 0)
 	background, _, _ := ebitenutil.NewImageFromFile("images/background.png", ebiten.FilterLinear)
 	screen.DrawImage(background, drawer)
 
-	if err := g.snake.Draw(screen, g.dotTime); err != nil {
+	if err := game.snake.Draw(screen, game.dotTime); err != nil {
 		return err
 	}
 
-	for _, enemy := range g.enemies {
-		if err := enemy.Draw(screen, g.dotTime); err != nil {
+	for _, enemy := range game.enemies {
+		if err := enemy.Draw(screen, game.dotTime); err != nil {
 			return err
 		}
 	}
 
-	if err := g.hud.Draw(screen); err != nil {
+	if err := game.hud.Draw(screen); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(g.foods); i++ {
-		if err := g.foods[i].Draw(screen, g.dotTime); err != nil {
+	for i := 0; i < len(game.foods); i++ {
+		if err := game.foods[i].Draw(screen, game.dotTime); err != nil {
 			return err
 		}
 	}

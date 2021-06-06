@@ -13,15 +13,13 @@ type Food struct {
 	x       float64
 	y       float64
 	eaten   bool
-	game    *Game
 	foodImg ebiten.Image
 }
 
 // Here we generate the foods
-func GenFood(game *Game) *Food {
+func GenFood() *Food {
 	food := Food{
-		game:  game,
-		eaten: false,
+		eaten:  false,
 	}
 	foodImg, _, _ := ebitenutil.NewImageFromFile("images/cherry.png", ebiten.FilterDefault)
 	food.foodImg = *foodImg

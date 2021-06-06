@@ -57,135 +57,127 @@ func CreateEnemySnake(g *Game) *EnemySnake {
 }
 
 // Enemy movement
-func (s *EnemySnake) ChannelPipe() error {
+func (enemy *EnemySnake) ChannelPipe() error {
 	for {
-		dotTime := <-s.channelMovements
-		s.Direction(dotTime)
+		dotTime := <-enemy.channelMovements
+		enemy.Direction(dotTime)
 	}
 }
 
 // Direction updates of enemy
-func (s *EnemySnake) Direction(dotTime int) error {
+func (enemy *EnemySnake) Direction(dotTime int) error {
 	if dotTime == 1 {
-		random := rand.New(s.seed)
+		random := rand.New(enemy.seed)
 		action := random.Intn(4)
 		changingDirection := random.Intn(3)
-		posX, posY := s.GetHeadPos()
+		posX, posY := enemy.GetHeadPos()
 		if changingDirection == 0 {
 			switch action {
 			case 0:
-				if posX < 560 && s.lastDir != "left" {
-					s.lastDir = "right"
+				if posX < 0 && enemy.lastDir != "left" {
+					enemy.lastDir = "right"
 				} else {
-					s.lastDir = "left"
+					enemy.lastDir = "left"
 				}
-				return nil
 			case 1:
-				if posY < 660 && s.lastDir != "up" {
-					s.lastDir = "down"
+				if posY < 40 && enemy.lastDir != "up" {
+					enemy.lastDir = "down"
 				} else {
-					s.lastDir = "up"
+					enemy.lastDir = "up"
 				}
-				return nil
 			case 2:
-				if posY > 20 && s.lastDir != "down" {
-					s.lastDir = "up"
+				if posY > 680 && enemy.lastDir != "down" {
+					enemy.lastDir = "up"
 				} else {
-					s.lastDir = "down"
+					enemy.lastDir = "down"
 				}
-				return nil
 			case 3:
-				if posX > 20 && s.lastDir != "right" {
-					s.lastDir = "left"
+				if posX > 580 && enemy.lastDir != "right" {
+					enemy.lastDir = "left"
 				} else {
-					s.lastDir = "right"
+					enemy.lastDir = "right"
 				}
-				return nil
 			}
 		}
 		// Bounds the collision
-		if posX >= 560 {
-			s.lastDir = "left"
-			return nil
+		if posX >= 580 {
+			enemy.lastDir = "left"
 		}
-		if posX == 20 {
-			s.lastDir = "right"
-			return nil
+		if posX <= 0 {
+			enemy.lastDir = "right"
 		}
-		if posY == 660 {
-			s.lastDir = "up"
-			return nil
+		if posY >= 680 {
+			enemy.lastDir = "up"
 		}
-		if posY == 20 {
-			s.lastDir = "down"
-			return nil
+		if posY <= 40 {
+			enemy.lastDir = "down"
 		}
 	}
 
 	if dotTime == 1 { // Checks collision with enemy
-		xPos, yPos := s.game.snake.getHeadPos()
-		if s.CollSnake(xPos, yPos) {
-			s.game.snake.game.crashed = true
-			s.game.gameOver()
+		xPos, yPos := enemy.game.snake.getHeadPos()
+		if enemy.CollSnake(xPos, yPos) {
+			enemy.game.snake.game.crashed = true
+			enemy.game.gameOver()
 		}
 	}
 	return nil
 }
 
 // Draws the snake
-func (s *EnemySnake) Draw(screen *ebiten.Image, dotTime int) error {
-	if s.game.alive {
-		s.UpdatePos(dotTime)
+func (enemy *EnemySnake) Draw(screen *ebiten.Image, dotTime int) error {
+	if enemy.game.alive {
+		enemy.UpdatePos(dotTime)
 	}
 	enemyDO := &ebiten.DrawImageOptions{}
-	xPos, yPos := s.GetHeadPos()
+	xPos, yPos := enemy.GetHeadPos()
 	enemyDO.GeoM.Translate(xPos, yPos)
 
-	if s.lastDir == "up" {
-		screen.DrawImage(&s.sHeadU, enemyDO)
-	} else if s.lastDir == "down" {
-		screen.DrawImage(&s.sHeadD, enemyDO)
-	} else if s.lastDir == "right" {
-		screen.DrawImage(&s.sHeadR, enemyDO)
-	} else if s.lastDir == "left" {
-		screen.DrawImage(&s.sHeadL, enemyDO)
+	if enemy.lastDir == "up" {
+		screen.DrawImage(&enemy.sHeadU, enemyDO)
+	} else if enemy.lastDir == "down" {
+		screen.DrawImage(&enemy.sHeadD, enemyDO)
+	} else if enemy.lastDir == "right" {
+		screen.DrawImage(&enemy.sHeadR, enemyDO)
+	} else if enemy.lastDir == "left" {
+		screen.DrawImage(&enemy.sHeadL, enemyDO)
 	}
 
-	for i := 0; i < s.nBodyP; i++ {
+	for i := 0; i < enemy.nBodyP; i++ {
 		partDO := &ebiten.DrawImageOptions{}
-		xPos, yPos := s.GetBody(i)
+		xPos, yPos := enemy.GetBody(i)
 		partDO.GeoM.Translate(xPos, yPos)
-		screen.DrawImage(&s.bodyE, partDO)
+		screen.DrawImage(&enemy.bodyE, partDO)
 	}
 
 	return nil
 }
 
 // Updates head position score
-func (s *EnemySnake) UpdatePos(dotTime int) {
+func (enemy *EnemySnake) UpdatePos(dotTime int) {
 	if dotTime == 1 {
-		if s.pointsWaiting > 0 {
-			s.nBodyP++
-			s.pointsWaiting--
+		if enemy.pointsWaiting > 0 {
+			enemy.nBodyP++
+			enemy.pointsWaiting--
 		}
-		switch s.lastDir {
+		switch enemy.lastDir {
 		case "up":
-			s.TranslateHeadPos(0, -20)
+			enemy.TranslateHeadPos(0, -20)
 		case "down":
-			s.TranslateHeadPos(0, +20)
+			enemy.TranslateHeadPos(0, +20)
 		case "right":
-			s.TranslateHeadPos(20, 0)
+			enemy.TranslateHeadPos(20, 0)
 		case "left":
-			s.TranslateHeadPos(-20, 0)
+			enemy.TranslateHeadPos(-20, 0)
 		}
 
 	}
 }
 
 // Evaluating if there was a collision
-func (s *EnemySnake) CollSnake(xPos, yPos float64) bool {
-	for i := 0; i < len(s.partsOfBody); i++ {
-		if xPos == s.partsOfBody[i][0] && yPos == s.partsOfBody[i][1] {
+func (enemy *EnemySnake) CollSnake(xPos, yPos float64) bool {
+	for i := 0; i < len(enemy.partsOfBody); i++ {
+		if xPos == enemy.partsOfBody[i][0] && yPos == enemy.partsOfBody[i][1] {
 			return true
 		}
 	}
@@ -193,30 +185,30 @@ func (s *EnemySnake) CollSnake(xPos, yPos float64) bool {
 }
 
 // Head pos is retuned
-func (s *EnemySnake) GetHeadPos() (float64, float64) {
-	return s.partsOfBody[0][0], s.partsOfBody[0][1]
+func (enemy *EnemySnake) GetHeadPos() (float64, float64) {
+	return enemy.partsOfBody[0][0], enemy.partsOfBody[0][1]
 }
 
 // Last body pos is returned
-func (s *EnemySnake) GetBody(pos int) (float64, float64) {
-	return s.partsOfBody[pos+1][0], s.partsOfBody[pos+1][1]
+func (enemy *EnemySnake) GetBody(pos int) (float64, float64) {
+	return enemy.partsOfBody[pos+1][0], enemy.partsOfBody[pos+1][1]
 }
 
 // AddPoint controls game's score
-func (s *EnemySnake) AddPoint() {
-	s.score++
-	s.pointsWaiting++
+func (enemy *EnemySnake) AddPoint() {
+	enemy.score++
+	enemy.pointsWaiting++
 }
 
 // Game score control
-func (s *EnemySnake) AddParts(newX, newY float64) {
-	s.partsOfBody = append([][]float64{{newX, newY}}, s.partsOfBody...)
-	s.partsOfBody = s.partsOfBody[:s.nBodyP+1]
+func (enemy *EnemySnake) AddParts(newX, newY float64) {
+	enemy.partsOfBody = append([][]float64{{newX, newY}}, enemy.partsOfBody...)
+	enemy.partsOfBody = enemy.partsOfBody[:enemy.nBodyP+1]
 }
 
 // Changes pos
-func (s *EnemySnake) TranslateHeadPos(newXPos, newYPos float64) {
-	newX := s.partsOfBody[0][0] + newXPos
-	newY := s.partsOfBody[0][1] + newYPos
-	s.AddParts(newX, newY)
+func (enemy *EnemySnake) TranslateHeadPos(newXPos, newYPos float64) {
+	newX := enemy.partsOfBody[0][0] + newXPos
+	newY := enemy.partsOfBody[0][1] + newYPos
+	enemy.AddParts(newX, newY)
 }
