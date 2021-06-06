@@ -8,4 +8,4 @@ $ make snek
 
 This will install the necessary dependencies, compile the binary object, run it, and clean the workspace afterwards.
 
-## Enjoy the game! :D
+## Enjoy the game! ;D

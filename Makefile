@@ -1,5 +1,5 @@
 snek: req build
-	./main 100 5
+	./main 40 5
 
 req:
 	go get github.com/hajimehoshi/ebiten/v2
