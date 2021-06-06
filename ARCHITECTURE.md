@@ -21,8 +21,8 @@ The overall structure and workflow of the code goes as the following diagram:
               │           b.            │
      ┌────────┤         game.go         ├────────┐
      │        │                         │        │
-     │        └┬────────▲─────┬────────▲┘        │
-     │3.       │        │     │        │         │
+     │3.      └┬────────▲─────┬────────▲┘        │
+     │         │        │     │        │         │
      │         │        │     │        │         │
      │         │        │     │        │         │
 ┌────▼────┐    │4.    5.│     │        │         │
@@ -145,7 +145,13 @@ Also, the names of the functions present in this document may vary with the actu
 	* This behavior also let us (even forces us) to use a single instance of the game and map in which we operate all the game object (snakes, food, etc). With this in mind, as previously commented, the objects can give feedback/send information to the centralized game entity (action sort of as clients of the "game server") instead of each of them having a complete copy of it.  
 * The enemy snakes' behavior is executed as independent go routines  
 	* In order to maintain the desired performance and have the sensation that the enemies run at the same pace as the human player (as well as comply with the given instructions of the project), the behavior of the enemy snakes has to be tracked in separate routines  
-	* Each enemy snake tracks its direction, movements, collisions and statuses, and reports the necessary information to the main go routine which uses that information in contrast with the information of all the other game entities, in order to have a centralized "perspective" of the game and to track important information, such as the food collisions of all the in-game snakes  
+	* Each enemy snake tracks its direction, movements, collisions and statuses, and reports the necessary information to the main go routine, which uses that information to have a centralized "perspective" of the game and to track important information, such as the food collisions of all the in-game snakes  
 * The main and enemy snakes have many helper/support functions for movements  
 	* In order to give a sense of realism and direction on the movements of the snakes, it was necessary to have the appropriate sprites and to track the direction of the movements of the snake at all times  
-	* This allows us to draw the required sprite at just the right moment  
+  * And, in order to do that, we needed to break down the functionality we needed into smaller functions  
+  * This allows us to draw the required sprite at just the right moment, and effectively control the graphics of each object  
+* The background of the game is static
+  * With this type of game and with the used assets/sprites, we thought a static background would benefit the player much more than a dynamic background could.  
+  * This because the player can get easily distracted, even dizzy, while trying to track the objects on the screen while the background is moving
+* The color palette is limited to grey/black and green
+  * We wanted to have simplicity in the colors and appeal to the nostalgia of the players of the original Snake game
