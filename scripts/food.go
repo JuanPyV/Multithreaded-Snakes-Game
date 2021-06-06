@@ -20,8 +20,8 @@ type Food struct {
 // Here we generate the foods
 func GenFood(game *Game) *Food {
 	food := Food{
-		game:   game,
-		eaten:  false,
+		game:  game,
+		eaten: false,
 	}
 	foodImg, _, _ := ebitenutil.NewImageFromFile("images/cherry.png", ebiten.FilterDefault)
 	food.foodImg = *foodImg
@@ -29,16 +29,13 @@ func GenFood(game *Game) *Food {
 	seed := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(seed)
 
-	food.x = float64(random.Intn(28) * 20 + 20)
-	food.y = float64(random.Intn(30) * 20 + 60)
+	food.x = float64(random.Intn(28)*20 + 20)
+	food.y = float64(random.Intn(30)*20 + 60)
 	return &food
 }
 
 // Update to the delicious foodImg deletion
 func (food *Food) Update(dotTime int) error {
-	if !food.eaten {
-		return nil
-	}
 	return nil
 }
 
