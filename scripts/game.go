@@ -103,7 +103,7 @@ func (game *Game) Update() error {
 
 		}
 		//update the channels
-		game.dotTime = (game.dotTime + 1) % 10
+		game.dotTime = (game.dotTime + 1) % 5
 
 		if err := game.snake.Update(game.dotTime); err != nil {
 			game.snakeChannel <- game.dotTime

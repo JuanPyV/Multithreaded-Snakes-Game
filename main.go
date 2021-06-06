@@ -20,13 +20,13 @@ func init() {
 		os.Exit(1)
 	}
 	nFood, err := strconv.Atoi(os.Args[1])
-	if err != nil {
-		fmt.Printf("'%s' is a invalid argument for number of food, try with a number. \n", os.Args[1])
+	if err != nil || nFood <= 0 || nFood >= 957{
+		fmt.Printf("'%s' is a invalid argument for number of food, try with a different number. \n", os.Args[1])
 		os.Exit(1)
 	}
 	nEnemies, err2 := strconv.Atoi(os.Args[2])
-	if err2 != nil {
-		fmt.Printf("'%s' is a invalid argument for number of enemies, try with a number. \n", os.Args[2])
+	if err2 != nil || nEnemies <= 0 || nEnemies > 15{
+		fmt.Printf("'%s' is a invalid argument for number of enemies, try with a different number. \n", os.Args[2])
 		os.Exit(1)
 	}
 	//fmt.Printf("Food: %d \n", nFood)
