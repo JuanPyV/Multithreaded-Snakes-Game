@@ -2,6 +2,7 @@ package scripts
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -23,6 +24,7 @@ type Game struct {
 	numEnemies   int
 	score        int
 	dotTime      int
+	crashCount   int
 }
 
 // NewGame : Starts a new game assigning variables
@@ -32,27 +34,28 @@ func NewGame(nFood int, nEnemies int) Game {
 		crashed:    false,
 		score:      0,
 		dotTime:    0,
+		crashCount: 10,
 		numFood:    nFood,
 		numEnemies: nEnemies,
 	}
 
-	foodArray := make([]*Food, game.numFood) //store all the cherries
+	foodArray := make([]*Food, game.numFood) // Here are going to be stored all the food generated
 	for i := 0; i < game.numFood; i++ {
 		foodArray[i] = GenFood()
 		time.Sleep(20)
 	}
 	game.foods = foodArray
-
 	game.snake = createSnake(&game)
 	game.snakeChannel = make(chan int)
 	go func() {
 		err := game.snake.Behavior()
 		if err != nil {
-
+			fmt.Println("Error on main snake routine")
+			os.Exit(1)
 		}
 	}()
 
-	arrayEnemies := make([]*EnemySnake, game.numEnemies)
+	arrayEnemies := make([]*EnemySnake, game.numEnemies) //Here we store all the enemies generated
 	for i := 0; i < len(arrayEnemies); i++ {
 		arrayEnemies[i] = CreateEnemySnake(&game)
 		time.Sleep(20)
@@ -61,7 +64,13 @@ func NewGame(nFood int, nEnemies int) Game {
 	for i := 0; i < len(enemiesChan); i++ {
 		enemiesChan[i] = make(chan int)
 		arrayEnemies[i].channelMovements = enemiesChan[i]
-		go arrayEnemies[i].ChannelPipe()
+		go func() {
+			err := arrayEnemies[i].ChannelPipe()
+			if err != nil {
+				fmt.Println("Error on enemy snake routine")
+				os.Exit(1)
+			}
+		}()
 		time.Sleep(20)
 	}
 	game.enemiesChan = enemiesChan
@@ -76,32 +85,34 @@ func NewGame(nFood int, nEnemies int) Game {
 
 // gameOver ends the game
 func (game *Game) gameOver() {
-	game.alive = false //boolean to keep alive
+	game.alive = false // Boolean that says if the main snake is still alive
+	game.hud.game.crashCount = 0
 }
 
 func (game *Game) Crashed() {
-	game.crashed = true
+	game.crashed = true // Boolean that says if the main snake has crashed with the walls or a enemy
 }
 
 // Update the main process of the game
 func (game *Game) Update() error {
+
 	if game.alive {
-		if game.numFood == 0 { //when all cherries has been eating the game ends
+		if game.numFood == 0 { //We verify if the main snake is bigger than the enemies
 			game.hud.game.alive = false
-			largest := game.enemies[0]
+			bigEnemy := game.enemies[0]
 			for i := 1; i < len(game.enemies); i++ {
-				if game.enemies[i].score > largest.score {
-					largest = game.enemies[i]
+				if game.enemies[i].score > bigEnemy.score {
+					bigEnemy = game.enemies[i]
 				}
 			}
-
-			if game.snake.score > largest.score {
+			if game.snake.score > bigEnemy.score {
 				game.hud.bigger = true
 			} else {
 				game.hud.bigger = false
 			}
 
 		}
+
 		//update the channels
 		game.dotTime = (game.dotTime + 1) % 5
 
@@ -113,7 +124,7 @@ func (game *Game) Update() error {
 		}
 		xPos, yPos := game.snake.getHeadPos()
 		for i := 0; i < len(game.foods); i++ {
-			if xPos == game.foods[i].x && yPos == game.foods[i].y { //if snake eats a cherry grows
+			if xPos == game.foods[i].x && yPos == game.foods[i].y { // Verify if the snake eats food so it can grow
 				game.foods[i].y = -20
 				game.foods[i].x = -20
 				game.hud.addPoint()
@@ -125,7 +136,7 @@ func (game *Game) Update() error {
 		for j := 0; j < len(game.enemies); j++ {
 			xPos, yPos := game.enemies[j].GetHeadPos()
 			for i := 0; i < len(game.foods); i++ {
-				if xPos == game.foods[i].x && yPos == game.foods[i].y { //if snake eats a cherry grows
+				if xPos == game.foods[i].x && yPos == game.foods[i].y { // The sames a s above just for each enemy
 					game.foods[i].y = -20
 					game.foods[i].x = -20
 					game.numFood--

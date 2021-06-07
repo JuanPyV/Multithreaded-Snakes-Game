@@ -32,14 +32,17 @@ func (hud *Hud) addPoint() {
 
 // Draw the hud
 func (hud *Hud) Draw(screen *ebiten.Image) error {
-	text.Draw(screen, "Score: "+strconv.Itoa(hud.score), inconsolata.Bold8x16, 15, 25, color.Black)
+	text.Draw(screen, "Score: "+strconv.Itoa(hud.score)+" Lives: "+strconv.Itoa(hud.game.crashCount), inconsolata.Bold8x16, 15, 25, color.Black)
 	if hud.game.alive == false {
 		textGameOver := ""
 		textGameOverDescription := ""
 		if hud.game.crashed {
 			textGameOver = "GAME OVER !!!"
 			textGameOverDescription = "You crashed with an enemy or wall..."
-		}else if hud.bigger {
+		}else if hud.game.crashCount == 0 {
+			textGameOver = "GAME OVER !!!"
+			textGameOverDescription = "The enemies hit you 10 times"
+		} else if hud.bigger {
 			textGameOver = "YOU WIN !!!"
 		}else {
 			textGameOver = "GAME OVER !!!"

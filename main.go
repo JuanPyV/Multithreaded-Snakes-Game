@@ -29,8 +29,6 @@ func init() {
 		fmt.Printf("'%s' is a invalid argument for number of enemies, try with a different number. \n", os.Args[2])
 		os.Exit(1)
 	}
-	//fmt.Printf("Food: %d \n", nFood)
-	//fmt.Printf("Enemies: %d \n", nEnemies)
 
 	game = scripts.NewGame(nFood, nEnemies)
 
@@ -47,21 +45,21 @@ func (g *Game) Update(screen *ebiten.Image) error {
 	return nil
 }
 
-// Draw renders the image windows every tick
+// Draw renders the image in the window every tick
 func (g *Game) Draw(screen *ebiten.Image) {
 	if err := game.Draw(screen); err != nil {
 		fmt.Println(err)
 	}
 }
 
-// Layout : Function which executes when it needs to reajust
+// Layout : Function which adjust the screen width and height
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return 600, 700
 }
 
 func main() {
 	ebiten.SetWindowSize(600, 700)
-	ebiten.SetWindowTitle("Multithreading Snakes Game")
+	ebiten.SetWindowTitle("SNEK   & <:========")
 
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)

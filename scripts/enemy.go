@@ -8,7 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-// EnemySnake object
+
 type EnemySnake struct {
 	game             *Game
 	nBodyP           int
@@ -26,7 +26,7 @@ type EnemySnake struct {
 	collision        bool
 }
 
-// Initialize
+
 func CreateEnemySnake(g *Game) *EnemySnake {
 	e := EnemySnake{
 		game:          g,
@@ -56,15 +56,17 @@ func CreateEnemySnake(g *Game) *EnemySnake {
 	return &e
 }
 
-// Enemy movement
 func (enemy *EnemySnake) ChannelPipe() error {
 	for {
 		dotTime := <-enemy.channelMovements
-		enemy.Direction(dotTime)
+		err := enemy.Direction(dotTime)
+		if err != nil {
+			return err
+		}
 	}
 }
 
-// Direction updates of enemy
+// Direction updates the direction of the enemy randomly and verifies the boundaries of the map
 func (enemy *EnemySnake) Direction(dotTime int) error {
 	if dotTime == 1 {
 		random := rand.New(enemy.seed)
@@ -99,7 +101,7 @@ func (enemy *EnemySnake) Direction(dotTime int) error {
 				}
 			}
 		}
-		// Bounds the collision
+		// Bounds for the collisions
 		if posX >= 580 {
 			enemy.lastDir = "left"
 		}
@@ -120,11 +122,20 @@ func (enemy *EnemySnake) Direction(dotTime int) error {
 			enemy.game.snake.game.crashed = true
 			enemy.game.gameOver()
 		}
+
+		xPosE, yPosE := enemy.GetHeadPos()
+		if enemy.game.crashCount > 0 && enemy.CollEnemy(xPosE, yPosE) {
+			enemy.game.crashCount--
+			if enemy.game.crashCount == 0{
+				enemy.game.gameOver()
+			}
+		}
+
 	}
 	return nil
 }
 
-// Draws the snake
+// Draw Draws the enemy snake
 func (enemy *EnemySnake) Draw(screen *ebiten.Image, dotTime int) error {
 	if enemy.game.alive {
 		enemy.UpdatePos(dotTime)
@@ -153,7 +164,7 @@ func (enemy *EnemySnake) Draw(screen *ebiten.Image, dotTime int) error {
 	return nil
 }
 
-// Updates head position score
+// UpdatePos Updates head position and its score
 func (enemy *EnemySnake) UpdatePos(dotTime int) {
 	if dotTime == 1 {
 		if enemy.pointsWaiting > 0 {
@@ -174,7 +185,7 @@ func (enemy *EnemySnake) UpdatePos(dotTime int) {
 	}
 }
 
-// Evaluating if there was a collision
+// CollSnake Evaluating if there was a collision
 func (enemy *EnemySnake) CollSnake(xPos, yPos float64) bool {
 	for i := 0; i < len(enemy.partsOfBody); i++ {
 		if xPos == enemy.partsOfBody[i][0] && yPos == enemy.partsOfBody[i][1] {
@@ -184,29 +195,39 @@ func (enemy *EnemySnake) CollSnake(xPos, yPos float64) bool {
 	return false
 }
 
-// Head pos is retuned
+func (enemy *EnemySnake) CollEnemy(xPos, yPos float64) bool {
+	for i := 0; i < len(enemy.game.snake.parts); i++ {
+		if xPos == enemy.game.snake.parts[i].X && yPos == enemy.game.snake.parts[i].Y {
+			return true
+		}
+	}
+	return false
+}
+
+
+// GetHeadPos Head pos is returned
 func (enemy *EnemySnake) GetHeadPos() (float64, float64) {
 	return enemy.partsOfBody[0][0], enemy.partsOfBody[0][1]
 }
 
-// Last body pos is returned
+// GetBody Last body pos is returned
 func (enemy *EnemySnake) GetBody(pos int) (float64, float64) {
 	return enemy.partsOfBody[pos+1][0], enemy.partsOfBody[pos+1][1]
 }
 
-// AddPoint controls game's score
+// AddPoint controls enemy's score
 func (enemy *EnemySnake) AddPoint() {
 	enemy.score++
 	enemy.pointsWaiting++
 }
 
-// Game score control
+// AddParts add a body part
 func (enemy *EnemySnake) AddParts(newX, newY float64) {
 	enemy.partsOfBody = append([][]float64{{newX, newY}}, enemy.partsOfBody...)
 	enemy.partsOfBody = enemy.partsOfBody[:enemy.nBodyP+1]
 }
 
-// Changes pos
+// TranslateHeadPos Changes head position
 func (enemy *EnemySnake) TranslateHeadPos(newXPos, newYPos float64) {
 	newX := enemy.partsOfBody[0][0] + newXPos
 	newY := enemy.partsOfBody[0][1] + newYPos

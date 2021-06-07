@@ -5,6 +5,8 @@ import (
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
+
+// Position : Struct for knowing the position of the body and head of the snake
 type Position struct {
 	X float64
 	Y float64
@@ -118,7 +120,7 @@ func (snake *Snake) Draw(screen *ebiten.Image, dotTime int) error {
 	return nil
 }
 
-// UpdatePos turn to a direction
+// UpdatePos turn to a direction adding or subtracting 20 because of the pixel size of the sprites
 func (snake *Snake) UpdatePos(dotTime int) {
 	if dotTime == 1 {
 		if snake.newLength > 0 {
@@ -151,17 +153,20 @@ func (snake *Snake) getPart(pos int) (float64, float64) {
 	return snake.parts[pos+1].X, snake.parts[pos+1].Y
 }
 
+// Turns the head to a specified x and y values
 func (snake *Snake) turnDir(newXPos, newYPos float64) {
 	newX := snake.parts[0].X + newXPos
 	newY := snake.parts[0].Y + newYPos
 	snake.updateParts(newX, newY)
 }
 
+// Update de body parts
 func (snake *Snake) updateParts(newX, newY float64) {
 	snake.parts = append([]Position{{newX, newY}}, snake.parts...)
 	snake.parts = snake.parts[:snake.length+1]
 }
 
+// Verify the collision with its own body, comparing to each body part position
 func (snake *Snake) ownCollision() bool {
 	x, y := snake.getHeadPos()
 	for i := 1; i < len(snake.parts); i++ {
